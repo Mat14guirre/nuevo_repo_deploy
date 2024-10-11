@@ -1,0 +1,36 @@
+<div>
+    <h1>CHAT</h1>
+    <h2>ejemplo cliente Socket.IO</h2>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    
+    const connectSocketServer = async (url, options) => {
+        return new Promise((resolve, reject) => {
+            const socket = io(url, options = {});
+
+            socket.on('connect', () =>{
+                console.log(`Conectado servidor socket.io ${url}`);
+                resolve(socket);
+            });
+            
+            socket.on('connect_error', err => {
+                console.error('ERROR al conectar servidor socket.io', err);
+                reject(err);
+            });
+
+            socket.on('welcome', data => {
+                console.log(data);
+            });
+        });
+    }
+
+    (async () => {
+        const socketClient = await connectSocketServer('');
+
+        // Posibilidades de emisión del lado del CLIENTE
+        socketClient.emit('init_message', { node: 32, name: 'Matias', location: 'Rosario, AR' });
+    })();
+</script>
