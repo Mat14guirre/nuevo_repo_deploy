@@ -1,33 +1,41 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import { uploader } from '../uploader.js';
+import { users } from '../config.js';
 
 
 const router = Router();
 
-const users = [
-    { id: 1, firstName: 'Juan', lastName: 'Perez' },
-    { id: 2, firstName: 'Carlos', lastName: 'Hernandez' },
-    { id: 3, firstName: 'Luis', lastName: 'Gonzalez' },
-    { id: 4, firstName: 'Alejo', lastName: 'Farias' },
-    { id: 5, firstName: 'Florencia', lastName: 'Saucedo' }
-];
-
 const auth = (req, res, next) => {
     console.log('Ejecuta el middleware de autenticación de usuario');
     next();
+
+    /**
+     * // Simulando la autenticación
+     * if (req.body.username === 'x' && req.body.pass === 'y') {
+     *  next();
+     * } else {
+     *  return res.status(401).send({ error: 'No tiene autorización', data: [] });
+     * }
+     */
 }
 
 router.get('/', (req, res) => {
     res.status(200).send({ error: null, data: users });
 });
 
-router.post('/', auth, uploader.single('thumbnail'), (req, res) => { 
-    const { firstName, lastName } = req.body; 
+// router.post('/', auth, uploader.array('thumbnail', 3), (req, res) => { // gestión de múltiples archivos
+router.post('/', auth, uploader.single('thumbnail'), (req, res) => { // gestión de archivo único
+    const { firstName, lastName } = req.body; // desestructuramos (extraemos) las ppdades que nos interesan del body
 
     if (firstName != '' && lastName != '') {
         const maxId = Math.max(...users.map(element => +element.id));
         const newUser = { id: maxId + 1, firstName: firstName, lastName: lastName };
         users.push(newUser);
+
+        // Recuperamos la instancia global de socketServer para poder realizar un emit
+        const socketServer = req.app.get('socketServer');
+        socketServer.emit('new_user', newUser);
+
         res.status(200).send({ error: null, data: newUser, file: req.file });
     } else {
         res.status(400).send({ error: 'Faltan campos obligatorios', data: [] });
@@ -57,5 +65,6 @@ router.delete('/:id', auth, (req, res) => {
         res.status(404).send({ error: 'No se encuentra el usuario', data: [] });
     }
 });
+
 
 export default router;
