@@ -12,13 +12,6 @@ const app = express();
 const httpServer = app.listen(config.PORT, () => {
     console.log(`Server activo en puerto ${config.PORT}`);
     
-    /**
-     * Separamos la lógica de socket.io en archivo aparte (sockets.js),
-     * importamos y levantamos la instancia acá.
-     * 
-     * La línea de app.set() nos permite generar una referencia global al
-     * objeto socketServer para poder utilizarlo por ej en endpoints (realizar un emit)
-     */
     const socketServer = initSocket(httpServer);
     app.set('socketServer', socketServer);
 
